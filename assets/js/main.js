@@ -194,7 +194,7 @@ document.querySelector('.prevClassButton').addEventListener("click", prevClass);
 
 function nextClass() {
 
-	const url = getUrl(1);
+	const url = getDestinationPage(1);
 
 	if (url) {
 		window.location.replace(url);
@@ -206,7 +206,7 @@ function nextClass() {
 
 function prevClass() {
 
-	const url = getUrl(-1);
+	const url = getDestinationPage(-1);
 
 	if (url) {
 		window.location.replace(url);
@@ -216,34 +216,34 @@ function prevClass() {
 	}
 }
 
-function getUrl(incrementClass) {
-	currentURL = window.location.href;
+function getNextDestination(increment) {
+	const currentPage = getCurrentPageNumber();
 
-	// Get the index of 'class-' in the url
-	let p = currentURL.indexOf("class-");
+	if (currentPage == -1) return "";
 
-	// If it is the last-class, return first-class url
-	if (p == -1) {
-		p = currentURL.indexOf("last-class");
-		return p != -1 ? currentURL.replace('last-class', 'class-01') : false;
-	}
-	// Get the number after 'class-' and then slice the .html off the end, parse it as an int, and then add 1
-	let num = parseInt(currentURL.substring(p + "class-".length).slice(0, -5)) + incrementClass;
+	let destination = getDestinationPage(currentPage + increment);
+	return destination;
+}
 
-	if (num > classes) {
-		return false;
-	}
+function getDestinationPage(pageNumber) {
+	let pageValue = pageNumber < 10 ? `0${pageNumber}` : pageNumber;
+	let splitUrl = window.location.href.split("/");
+	let baseUrl = splitUrl.slice(0, splitUrl.length - 1).join("/");
 
-	// Get the rest of the url in order to increment it
-	let rest = currentURL.substring(0, p);
-
-	// Single digit numbers get parsed as '1', '2', add leading zero and turn num into string
-	String(num).length < 2 ? num = String('0' + num) : String(num);
-
-	if (currentURL.includes("netlify")) { // netlify deplyment don't need .html extention
-		return `${rest}\class-${num}`;
+	if (window.location.href.includes("netlify")) {
+		return `${baseUrl}/class-${pageValue}`;
 	}
 
-	// Return the URL
-	return `${rest}\class-${num}.html`;
+	return `${baseUrl}/class-${pageValue}.html`;
+}
+
+function getCurrentPageNumber() {
+	const url = window.location.href;
+	if (!url.includes("class-")) return -1;
+
+	let urlSplit = url.split("/"); //
+
+	let lastValue = urlSplit[urlSplit.length - 1]; // 'class-xx.html'
+	let currentPageNumber = parseInt(lastValue.split(/[-.]+/)[1]);
+	return currentPageNumber;
 }
