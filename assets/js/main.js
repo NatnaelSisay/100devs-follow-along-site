@@ -6,241 +6,245 @@
 
 
 
-(function($) {
+(function ($) {
 
-	var	$window = $(window),
+	var $window = $(window),
 		$body = $('body');
 
 	// Breakpoints.
-		breakpoints({
-			xlarge:   [ '1281px',  '1680px' ],
-			large:    [ '981px',   '1280px' ],
-			medium:   [ '737px',   '980px'  ],
-			small:    [ '481px',   '736px'  ],
-			xsmall:   [ '361px',   '480px'  ],
-			xxsmall:  [ null,      '360px'  ]
-		});
+	breakpoints({
+		xlarge: ['1281px', '1680px'],
+		large: ['981px', '1280px'],
+		medium: ['737px', '980px'],
+		small: ['481px', '736px'],
+		xsmall: ['361px', '480px'],
+		xxsmall: [null, '360px']
+	});
 
 	// Play initial animations on page load.
-		$window.on('load', function() {
-			window.setTimeout(function() {
-				$body.removeClass('is-preload');
-			}, 100);
-		});
+	$window.on('load', function () {
+		window.setTimeout(function () {
+			$body.removeClass('is-preload');
+		}, 100);
+	});
 
 	// Touch?
-		if (browser.mobile)
-			$body.addClass('is-touch');
+	if (browser.mobile)
+		$body.addClass('is-touch');
 
 	// Forms.
-		var $form = $('form');
+	var $form = $('form');
 
-		// Auto-resizing textareas.
-			$form.find('textarea').each(function() {
+	// Auto-resizing textareas.
+	$form.find('textarea').each(function () {
 
-				var $this = $(this),
-					$wrapper = $('<div class="textarea-wrapper"></div>'),
-					$submits = $this.find('input[type="submit"]');
+		var $this = $(this),
+			$wrapper = $('<div class="textarea-wrapper"></div>'),
+			$submits = $this.find('input[type="submit"]');
+
+		$this
+			.wrap($wrapper)
+			.attr('rows', 1)
+			.css('overflow', 'hidden')
+			.css('resize', 'none')
+			.on('keydown', function (event) {
+
+				if (event.keyCode == 13
+					&& event.ctrlKey) {
+
+					event.preventDefault();
+					event.stopPropagation();
+
+					$(this).blur();
+
+				}
+
+			})
+			.on('blur focus', function () {
+				$this.val($.trim($this.val()));
+			})
+			.on('input blur focus --init', function () {
+
+				$wrapper
+					.css('height', $this.height());
 
 				$this
-					.wrap($wrapper)
-					.attr('rows', 1)
-					.css('overflow', 'hidden')
-					.css('resize', 'none')
-					.on('keydown', function(event) {
+					.css('height', 'auto')
+					.css('height', $this.prop('scrollHeight') + 'px');
 
-						if (event.keyCode == 13
-						&&	event.ctrlKey) {
+			})
+			.on('keyup', function (event) {
 
-							event.preventDefault();
-							event.stopPropagation();
+				if (event.keyCode == 9)
+					$this
+						.select();
 
-							$(this).blur();
+			})
+			.triggerHandler('--init');
 
-						}
+		// Fix.
+		if (browser.name == 'ie'
+			|| browser.mobile)
+			$this
+				.css('max-height', '10em')
+				.css('overflow-y', 'auto');
 
-					})
-					.on('blur focus', function() {
-						$this.val($.trim($this.val()));
-					})
-					.on('input blur focus --init', function() {
-
-						$wrapper
-							.css('height', $this.height());
-
-						$this
-							.css('height', 'auto')
-							.css('height', $this.prop('scrollHeight') + 'px');
-
-					})
-					.on('keyup', function(event) {
-
-						if (event.keyCode == 9)
-							$this
-								.select();
-
-					})
-					.triggerHandler('--init');
-
-				// Fix.
-					if (browser.name == 'ie'
-					||	browser.mobile)
-						$this
-							.css('max-height', '10em')
-							.css('overflow-y', 'auto');
-
-			});
+	});
 
 	// Menu.
-		var $menu = $('#menu');
+	var $menu = $('#menu');
 
-		$menu.wrapInner('<div class="inner"></div>');
+	$menu.wrapInner('<div class="inner"></div>');
 
-		$menu._locked = false;
+	$menu._locked = false;
 
-		$menu._lock = function() {
+	$menu._lock = function () {
 
-			if ($menu._locked)
-				return false;
+		if ($menu._locked)
+			return false;
 
-			$menu._locked = true;
+		$menu._locked = true;
 
-			window.setTimeout(function() {
-				$menu._locked = false;
+		window.setTimeout(function () {
+			$menu._locked = false;
+		}, 350);
+
+		return true;
+
+	};
+
+	$menu._show = function () {
+
+		if ($menu._lock())
+			$body.addClass('is-menu-visible');
+
+	};
+
+	$menu._hide = function () {
+
+		if ($menu._lock())
+			$body.removeClass('is-menu-visible');
+
+	};
+
+	$menu._toggle = function () {
+
+		if ($menu._lock())
+			$body.toggleClass('is-menu-visible');
+
+	};
+
+	$menu
+		.appendTo($body)
+		.on('click', function (event) {
+			event.stopPropagation();
+		})
+		.on('click', 'a', function (event) {
+
+			var href = $(this).attr('href');
+
+			event.preventDefault();
+			event.stopPropagation();
+
+			// Hide.
+			$menu._hide();
+
+			// Redirect.
+			if (href == '#menu')
+				return;
+
+			window.setTimeout(function () {
+				window.location.href = href;
 			}, 350);
 
-			return true;
+		})
+		.append('<a class="close" href="#menu">Close</a>');
 
-		};
+	$body
+		.on('click', 'a[href="#menu"]', function (event) {
 
-		$menu._show = function() {
+			event.stopPropagation();
+			event.preventDefault();
 
-			if ($menu._lock())
-				$body.addClass('is-menu-visible');
+			// Toggle.
+			$menu._toggle();
 
-		};
+		})
+		.on('click', function (event) {
 
-		$menu._hide = function() {
+			// Hide.
+			$menu._hide();
 
-			if ($menu._lock())
-				$body.removeClass('is-menu-visible');
+		})
+		.on('keydown', function (event) {
 
-		};
+			// Hide on escape.
+			if (event.keyCode == 27)
+				$menu._hide();
 
-		$menu._toggle = function() {
-
-			if ($menu._lock())
-				$body.toggleClass('is-menu-visible');
-
-		};
-
-		$menu
-			.appendTo($body)
-			.on('click', function(event) {
-				event.stopPropagation();
-			})
-			.on('click', 'a', function(event) {
-
-				var href = $(this).attr('href');
-
-				event.preventDefault();
-				event.stopPropagation();
-
-				// Hide.
-					$menu._hide();
-
-				// Redirect.
-					if (href == '#menu')
-						return;
-
-					window.setTimeout(function() {
-						window.location.href = href;
-					}, 350);
-
-			})
-			.append('<a class="close" href="#menu">Close</a>');
-
-		$body
-			.on('click', 'a[href="#menu"]', function(event) {
-
-				event.stopPropagation();
-				event.preventDefault();
-
-				// Toggle.
-					$menu._toggle();
-
-			})
-			.on('click', function(event) {
-
-				// Hide.
-					$menu._hide();
-
-			})
-			.on('keydown', function(event) {
-
-				// Hide on escape.
-					if (event.keyCode == 27)
-						$menu._hide();
-
-			});
+		});
 
 })(jQuery);
 
 // Next Class Button
 // Can't find a good way to get all classes besides assigning it
 // TODO: Make ths more dynamic
-const classes = 52
-document.querySelector('.nextClassButton').addEventListener("click", nextClass)
-document.querySelector('.prevClassButton').addEventListener("click", prevClass)
+const classes = 52;
+document.querySelector('.nextClassButton').addEventListener("click", nextClass);
+document.querySelector('.prevClassButton').addEventListener("click", prevClass);
 
-function nextClass(){
+function nextClass() {
 
-	const url = getUrl(1)
+	const url = getUrl(1);
 
-	if(url) {
-		window.location.replace(url)
+	if (url) {
+		window.location.replace(url);
 	}
 	else {
-		alert(`We don't have that class yet.`)
+		alert(`We don't have that class yet.`);
 	}
 }
 
-function prevClass(){
+function prevClass() {
 
-	const url = getUrl(-1)
+	const url = getUrl(-1);
 
-	if(url) {
-		window.location.replace(url)
-  }
+	if (url) {
+		window.location.replace(url);
+	}
 	else {
-		alert(`We don't have that class yet.`)
+		alert(`We don't have that class yet.`);
 	}
 }
 
 function getUrl(incrementClass) {
-	currentURL = window.location.href
+	currentURL = window.location.href;
 
 	// Get the index of 'class-' in the url
-	let p = currentURL.indexOf("class-")
+	let p = currentURL.indexOf("class-");
 
 	// If it is the last-class, return first-class url
-	if(p == -1) {
-		p = currentURL.indexOf("last-class")
-		return p != -1 ? currentURL.replace('last-class', 'class-01') : false
+	if (p == -1) {
+		p = currentURL.indexOf("last-class");
+		return p != -1 ? currentURL.replace('last-class', 'class-01') : false;
 	}
 	// Get the number after 'class-' and then slice the .html off the end, parse it as an int, and then add 1
-	let num = parseInt(currentURL.substring(p + "class-".length).slice(0, -5)) + incrementClass
+	let num = parseInt(currentURL.substring(p + "class-".length).slice(0, -5)) + incrementClass;
 
-	if(num > classes) {
-		return false
+	if (num > classes) {
+		return false;
 	}
 
 	// Get the rest of the url in order to increment it
-	let rest = currentURL.substring(0, p)
+	let rest = currentURL.substring(0, p);
 
 	// Single digit numbers get parsed as '1', '2', add leading zero and turn num into string
-	String(num).length < 2 ? num = String('0' + num) : String(num)
+	String(num).length < 2 ? num = String('0' + num) : String(num);
+
+	if (currentURL.includes("netllify")) { // netlify deplyment don't need .html extention
+		return `${rest}\class-${num}`;
+	}
 
 	// Return the URL
-	return `${rest}\class-${num}.html`
+	return `${rest}\class-${num}.html`;
 }
