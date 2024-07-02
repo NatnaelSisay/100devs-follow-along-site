@@ -194,7 +194,7 @@ document.querySelector('.prevClassButton').addEventListener("click", prevClass);
 
 function nextClass() {
 
-	const url = getDestinationPage(1);
+	const url = getNextDestination(1);
 
 	if (url) {
 		window.location.replace(url);
@@ -206,7 +206,7 @@ function nextClass() {
 
 function prevClass() {
 
-	const url = getDestinationPage(-1);
+	const url = getNextDestination(-1);
 
 	if (url) {
 		window.location.replace(url);
