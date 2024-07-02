@@ -5,7 +5,6 @@
 */
 
 
-
 (function ($) {
 
 	var $window = $(window),
@@ -241,7 +240,7 @@ function getUrl(incrementClass) {
 	// Single digit numbers get parsed as '1', '2', add leading zero and turn num into string
 	String(num).length < 2 ? num = String('0' + num) : String(num);
 
-	if (currentURL.includes("netllify")) { // netlify deplyment don't need .html extention
+	if (currentURL.includes("netlify")) { // netlify deplyment don't need .html extention
 		return `${rest}\class-${num}`;
 	}
 
